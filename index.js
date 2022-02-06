@@ -1,17 +1,15 @@
 
 const spawn = require('child_process').spawn;
-const { Client, MessageAttachment } = require("discord.js");
+const { Client } = require("discord.js");
 require('dotenv').config()
 const { nanoid } = require("nanoid");
 const fs = require('fs').promises;
 const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 
 client.once('ready', () => {
-    console.log('Ready!');
+    console.log('Bot is running!');
 });
-
 const prefix = "!";
-
 client.on("messageCreate", async (message) => {
     if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
@@ -26,29 +24,29 @@ client.on("messageCreate", async (message) => {
     else if (isValidHttpUrl(command)) {
         try {
             const filename = await downloadVideo(command)
-            if (!filename) return message.reply(`Hyvä linkki vittu ku lautaus ei onnistu... ${Date.now() - message.createdTimestamp}ms`);
+            if (!filename) return message.reply(`Hyvä linkki... failed to ytdl... ${Date.now() - message.createdTimestamp}ms`);
             const videoOK = await transcode(filename, 30)
-            if (!videoOK) return message.reply(`Hyvä linkki vittu... failed to transcode ${Date.now() - message.createdTimestamp}ms`);
+            if (!videoOK) return message.reply(`Hyvä linkki... failed to transcode ${Date.now() - message.createdTimestamp}ms`);
             
             if (await getFileSize(filename) > 8) {
                 await transcode(filename, 40)
             } else {
-                if (await getFileSize(filename) > 8) message.reply(`Hyvä linkki vittu... Paskalla laadulla silti koko oli: ${finalSize}Mb`);
+                if (await getFileSize(filename) > 8) message.reply(`Hyvä linkki... after downgrade filesize was: ${finalSize}Mb`);
             }
             message.channel.send({
                 files: [`output-${filename}`]
             })
+
             message.delete()
             await fs.unlink(filename)
             await fs.unlink(`output-${filename}`)
         } catch (e) {
             console.log("naura", e.message)
-            return message.reply(`Hyvä linkki vittu... ${Date.now() - message.createdTimestamp}ms`);
+            return message.reply(`Hyvä linkki... ${Date.now() - message.createdTimestamp}ms`);
         }
     }
 });
 
-// Login to Discord with your client's token
 client.login(process.env.TOKEN)
 
 const getFileSize = async filename => {
@@ -60,7 +58,6 @@ const getFileSize = async filename => {
 
 const downloadVideo = async (link) => new Promise((resolve, reject) => {
     const filename = nanoid(8)
-    //    const ytdlp = spawn('yt-dlp', ["-S", "res,ext:mp4:m4a", "--recode", "mp4", "-o", `${filename}.mp4`, `${link}`]);
     const ytdlp = spawn('yt-dlp', ["-S", "res,ext:mp4:m4a", "--recode", "mp4", "-o", `${filename}.mp4`, `${link}`]);
     ytdlp.stderr.on('data', (data) => {
         console.error(data.toString())

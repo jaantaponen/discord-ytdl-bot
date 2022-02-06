@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.0-base-ubuntu20.04
+FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Helsinki
 RUN apt-get -y update && \
@@ -11,9 +11,9 @@ RUN apt-get -y update && \
     apt-get clean all
 RUN python3 -m pip install --upgrade git+https://github.com/yt-dlp/yt-dlp.git@master && \
     python3 -m pip install apprise
-
 WORKDIR /workspace
 COPY package.json package.json
 COPY package-lock.json package-lock.json
 COPY index.js index.js
+RUN npm ci
 CMD ["node", "index.js"]
