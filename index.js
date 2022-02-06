@@ -1,19 +1,18 @@
 
 const spawn = require('child_process').spawn;
-const Discord = require("discord.js");
+const { Client, MessageAttachment } = require("discord.js");
 require('dotenv').config()
 const { nanoid } = require("nanoid");
+const fs = require('fs').promises;
+const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 
-const client = new Discord.Client({intents: ["GUILDS", "GUILD_MESSAGES"]});
-
-// When the client is ready, run this code (only once)
 client.once('ready', () => {
-	console.log('Ready!');
+    console.log('Ready!');
 });
 
 const prefix = "!";
 
-client.on("messageCreate", (message) => {
+client.on("messageCreate", async (message) => {
     if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
 
@@ -22,37 +21,79 @@ client.on("messageCreate", (message) => {
     const command = args.shift().toLowerCase();
     if (command === "ping") {
         const timeTaken = Date.now() - message.createdTimestamp;
-        message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);      
+        message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
     }
-    else if (command === "dl") {
-        const parameter = args.shift().toLowerCase();
-        message.reply(`This is a valid link ${isValidHttpUrl(parameter)}!`);
-      }   
-  });
+    else if (isValidHttpUrl(command)) {
+        try {
+            const filename = await downloadVideo(command)
+            if (!filename) return message.reply(`Hyvä linkki vittu ku lautaus ei onnistu... ${Date.now() - message.createdTimestamp}ms`);
+            const videoOK = await transcode(filename, 30)
+            if (!videoOK) return message.reply(`Hyvä linkki vittu... failed to transcode ${Date.now() - message.createdTimestamp}ms`);
+            
+            if (await getFileSize(filename) > 8) {
+                await transcode(filename, 40)
+            } else {
+                if (await getFileSize(filename) > 8) message.reply(`Hyvä linkki vittu... Paskalla laadulla silti koko oli: ${finalSize}Mb`);
+            }
+            message.channel.send({
+                files: [`output-${filename}`]
+            })
+            message.delete()
+            await fs.unlink(filename)
+            await fs.unlink(`output-${filename}`)
+        } catch (e) {
+            console.log("naura", e.message)
+            return message.reply(`Hyvä linkki vittu... ${Date.now() - message.createdTimestamp}ms`);
+        }
+    }
+});
 
 // Login to Discord with your client's token
-//client.login(process.env.TOKEN)
+client.login(process.env.TOKEN)
 
-
+const getFileSize = async filename => {
+    const stats = await fs.stat(`output-${filename}`)
+    const fileSizeInBytes = stats.size;
+    const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024);
+    return fileSizeInMegabytes
+}
 
 const downloadVideo = async (link) => new Promise((resolve, reject) => {
     const filename = nanoid(8)
-    let outputFilename = undefined
-    const ytdlp = spawn('yt-dlp', ['-o', filename, `${link}`]);
+    //    const ytdlp = spawn('yt-dlp', ["-S", "res,ext:mp4:m4a", "--recode", "mp4", "-o", `${filename}.mp4`, `${link}`]);
+    const ytdlp = spawn('yt-dlp', ["-S", "res,ext:mp4:m4a", "--recode", "mp4", "-o", `${filename}.mp4`, `${link}`]);
     ytdlp.stderr.on('data', (data) => {
-        console.log(`${data}`);
+        console.error(data.toString())
         resolve()
     });
     ytdlp.stdout.on('data', (data) => {
-        const row = data.toString()
-        if (row.includes('Destination:')) {
-            outputFilename = row.split(' ').pop()
-        }
     });
     ytdlp.on('close', (code) => {
-        resolve(outputFilename);
+        resolve(`${filename}.mp4`);
     });
 });
+
+
+const transcode = (filename, crf) => new Promise((resolve, reject) => {
+    const ffmpeg = spawn('ffmpeg', ['-y', '-i', `${filename}`, '-c:v', 'libx264', '-preset', 'slow', "-crf", crf, "-c:a", "aac", "-b:a", "128k", `output-${filename}`]);
+    ffmpeg.stderr.on('data', (data) => {
+        console.log(`${data}`);
+    });
+    ffmpeg.on('close', async (code) => {
+        const duration = await getVideoLength(`output-${filename}`)
+        resolve(duration > 0)
+    });
+});
+
+const isValidHttpUrl = (string) => {
+    let url;
+    try {
+        url = new URL(string);
+    } catch (_) {
+        return false;
+    }
+    return url.protocol === "http:" || url.protocol === "https:";
+}
 
 const getVideoLength = (filename) => new Promise((resolve, reject) => {
     const ffprobe = spawn('ffprobe', ["-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", filename]);
@@ -71,37 +112,11 @@ const getVideoLength = (filename) => new Promise((resolve, reject) => {
     });
 });
 
-const isValidHttpUrl = (string) => {
-    let url;
-    try {
-      url = new URL(string);
-    } catch (_) {
-      return false;  
-    }
-    return url.protocol === "http:" || url.protocol === "https:";
-  }
-
-
 // https://trac.ffmpeg.org/wiki/Encode/H.264#twopass
-const calculateFileSize = (seconds) => {
+const calculateBitrate = (seconds) => {
     // (8 MiB * 8192 [converts MiB to kBit]) / x seconds
     const videoSizekBit = (8 * 8192) / seconds
     // videoSizekBit - 128 kBit/s (desired audio bitrate) = x kBit/s video bitrate
     const fileSizekBit = videoSizekBit - 128
     return fileSizekBit
 }
-
-//downloadVideo("").then(data => console.log(data))
-//getVideoLength('8N_eHxCd.webm').then(data => console.log(data))
-
-
-/* const p = new Promise((resolve, reject) => {
-    const ffmpeg = spawn('ffmpeg', ['-i', `${parent}/${video}.mp4`, '-codec:v', 'libx264', '-profile:v', 'main', '-preset', 'slow', '-b:v', '400k', '-maxrate', '400k', '-bufsize', '800k', '-vf', `scale=-2:${quality}`, '-threads', '0', '-b:a', '128k', `${parent}/transcoded/${video}_${quality}.mp4`]);
-    ffmpeg.stderr.on('data', (data) => {
-        console.log(`${data}`);
-    });
-    ffmpeg.on('close', (code) => {
-        resolve();
-    });
-});
-return p; */
