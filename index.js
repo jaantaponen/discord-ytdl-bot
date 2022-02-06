@@ -58,15 +58,17 @@ const getFileSize = async filename => {
 
 const downloadVideo = async (link) => new Promise((resolve, reject) => {
     const filename = nanoid(8)
-    const ytdlp = spawn('yt-dlp', ["-S", "res,ext:mp4:m4a", "--recode", "mp4", "-o", `${filename}.mp4`, `${link}`]);
+    const ytdlp = spawn('yt-dlp', ["-o", `${filename}.%(ext)s`, `${link}`]);
     ytdlp.stderr.on('data', (data) => {
         console.log(data.toString())
         resolve()
     });
     ytdlp.stdout.on('data', (data) => {
     });
-    ytdlp.on('close', (code) => {
-        resolve(`${filename}.mp4`);
+    ytdlp.on('close', async (code) => {
+        const files = await fs.readdir(__dirname);
+        console.log("files", files)
+        resolve(files.find(x => x.includes(filename)));
     });
 });
 
