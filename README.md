@@ -15,7 +15,7 @@ version: "3.9"
    
 services:
   bot:
-    build: https://github.com/jaantaponen/discord-ytdl-bot.git
+    build: https://github.com/jaantaponen/discord-ytdl-bot.git#main
     restart: unless-stopped
     environment:
       - TOKEN="BOT TOKEN"
