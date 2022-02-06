@@ -41,7 +41,7 @@ client.on("messageCreate", async (message) => {
             await fs.unlink(filename)
             await fs.unlink(`output-${filename}`)
         } catch (e) {
-            console.log("naura", e.message)
+            console.log("naura", e)
             return message.reply(`Hyvä linkki... ${Date.now() - message.createdTimestamp}ms`);
         }
     }
@@ -60,7 +60,7 @@ const downloadVideo = async (link) => new Promise((resolve, reject) => {
     const filename = nanoid(8)
     const ytdlp = spawn('yt-dlp', ["-S", "res,ext:mp4:m4a", "--recode", "mp4", "-o", `${filename}.mp4`, `${link}`]);
     ytdlp.stderr.on('data', (data) => {
-        console.error(data.toString())
+        console.log(data.toString())
         resolve()
     });
     ytdlp.stdout.on('data', (data) => {
