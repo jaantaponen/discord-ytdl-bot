@@ -1,7 +1,13 @@
 ## Discord download bot
 
-This Discord bot downloads your links prefixed with `!` and sends them as a reply to the channel. It will try to transcode the videos so we don't exceed the free 8mb limit.
+This Discord bot downloads your links prefixed with `!` and sends them as a reply to the channel. 
 
+This bot can:
+- Try to transcode the videos so we don't exceed the free 8mb limit.
+- Delete the original message if the video was able to be downloaded
+- Install yt-dlp from source every rebuild
+
+#### Example docker-compose
 
 ```console
 
