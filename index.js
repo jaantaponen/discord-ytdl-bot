@@ -64,6 +64,7 @@ const downloadVideo = async (link) => new Promise((resolve, reject) => {
         resolve()
     });
     ytdlp.stdout.on('data', (data) => {
+        console.log(data.toString())
     });
     ytdlp.on('close', async (code) => {
         const files = await fs.readdir(__dirname);
