@@ -58,10 +58,9 @@ const getFileSize = async filename => {
 
 const downloadVideo = async (link) => new Promise((resolve, reject) => {
     const filename = nanoid(8)
-    const ytdlp = spawn('yt-dlp', ["-o", `${filename}.%(ext)s`, `${link}`]);
+    const ytdlp = spawn('yt-dlp', ["--verbose", "-o", `${filename}.%(ext)s`, `${link}`]);
     ytdlp.stderr.on('data', (data) => {
         console.log(data.toString())
-        resolve()
     });
     ytdlp.stdout.on('data', (data) => {
         console.log(data.toString())
