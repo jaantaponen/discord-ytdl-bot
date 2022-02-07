@@ -1,10 +1,12 @@
-
+require('dotenv').config()
 const spawn = require('child_process').spawn;
 const { Client } = require("discord.js");
-require('dotenv').config()
+const yt = require('youtube-search-without-api-key');
 const { nanoid } = require("nanoid");
 const fs = require('fs').promises;
 const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
+const path = require("path");
+var moment = require('moment');
 
 client.once('ready', () => {
     console.log('Bot is running!');
@@ -16,36 +18,48 @@ client.on("messageCreate", async (message) => {
 
     const commandBody = message.content.slice(prefix.length);
     const args = commandBody.split(' ');
-    const command = args.shift().toLowerCase();
+    const command = args.shift()
     if (command === "ping") {
         const timeTaken = Date.now() - message.createdTimestamp;
         message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
     }
-    else if (isValidHttpUrl(command)) {
-        try {
-            const filename = await downloadVideo(command)
-            if (!filename) return message.reply(`Hyvä linkki... failed to ytdl... ${Date.now() - message.createdTimestamp}ms`);
-            const videoOK = await transcode(filename, 30)
-            if (!videoOK) return message.reply(`Hyvä linkki... failed to transcode ${Date.now() - message.createdTimestamp}ms`);
-            
-            if (await getFileSize(filename) > 8) {
-                await transcode(filename, 40)
-            } else {
-                if (await getFileSize(filename) > 8) message.reply(`Hyvä linkki... after downgrade filesize was: ${finalSize}Mb`);
-            }
-            message.channel.send({
-                files: [`output-${filename}`]
-            })
-
-            message.delete()
-            await fs.unlink(filename)
-            await fs.unlink(`output-${filename}`)
-        } catch (e) {
-            console.log("naura", e)
-            return message.reply(`Hyvä linkki... ${Date.now() - message.createdTimestamp}ms`);
+    else if (command === "s") {
+        const searchTerm = args.join(' ')
+        const videos = await yt.search(searchTerm);
+        const topResults = videos.length > 9 ? videos.slice(0, 9) : videos
+        const shortVideo = topResults.find(x => moment(x.duration_raw, "mm:ss").minutes() < 1)
+        if (shortVideo) {
+            return await handleProcess(message, shortVideo.url, true)
+        } else {
+            return message.reply(`Hyvä hakusana.... no videos under 1minute found from top 10 results ${Date.now() - message.createdTimestamp}ms`);
         }
     }
+    else if (isValidHttpUrl(command)) {
+        return await handleProcess(message, command)
+    }
 });
+
+
+const handleProcess = async (message, url, reply) => {
+    const filename = await downloadVideo(url)
+    if (!filename) return message.reply(`Hyvä linkki... failed to ytdl... ${Date.now() - message.createdTimestamp}ms`);
+    const videoOK = await transcode(filename, 30)
+    if (!videoOK) return message.reply(`Hyvä linkki... failed to transcode ${Date.now() - message.createdTimestamp}ms`);
+
+    if (await getFileSize(filename) > 8) {
+        await transcode(filename, 40)
+    } else {
+        if (await getFileSize(filename) > 8) message.reply(`Hyvä linkki... after downgrade filesize was: ${finalSize}Mb`);
+    }
+    if (reply) {
+        message.reply({ files: [`output-${filename}`] })
+    } else {
+        message.channel.send({ files: [`output-${filename}`] })
+        message.delete()
+    }
+    await fs.unlink(filename)
+    await fs.unlink(`output-${filename}`)
+}
 
 client.login(process.env.TOKEN)
 
@@ -58,7 +72,7 @@ const getFileSize = async filename => {
 
 const downloadVideo = async (link) => new Promise((resolve, reject) => {
     const filename = nanoid(8)
-    const ytdlp = spawn('yt-dlp', ["--verbose", "-o", `${filename}.%(ext)s`, `${link}`]);
+    const ytdlp = spawn('yt-dlp', ["--verbose", "--max-filesize", "65m", "-S", "res,ext:mp4:m4a", "--recode", "mp4", "-o", `${filename}.%(ext)s`, `${link}`]);
     ytdlp.stderr.on('data', (data) => {
         console.log(data.toString())
     });
@@ -71,6 +85,7 @@ const downloadVideo = async (link) => new Promise((resolve, reject) => {
         resolve(files.find(x => x.includes(filename)));
     });
 });
+
 
 
 const transcode = (filename, crf) => new Promise((resolve, reject) => {
