@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM debian:11-slim
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Helsinki
 RUN apt-get -y update && \
