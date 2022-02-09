@@ -21,3 +21,14 @@ services:
       - TOKEN="BOT TOKEN"
 
 ```
+
+#### Running with HW acceleration
+
+```docker
+
+docker build -t ytdl-bot . && \
+docker run --rm -it --gpus 1 \
+    -e NVIDIA_VISIBLE_DEVICES=all \
+    -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video \
+    -e TOKEN="XXXXXXXXXXXXXXXXXXXXXXXX" \
+    ytdl-bot
