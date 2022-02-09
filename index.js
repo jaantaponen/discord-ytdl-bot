@@ -81,15 +81,12 @@ const downloadVideo = async (link) => new Promise((resolve, reject) => {
     });
     ytdlp.on('close', async (code) => {
         const files = await fs.readdir(__dirname);
-        console.log("files", files)
         resolve(files.find(x => x.includes(filename)));
     });
 });
 
-
-
 const transcode = (filename, crf) => new Promise((resolve, reject) => {
-    const ffmpeg = spawn('ffmpeg', ['-y', '-i', `${filename}`, '-c:v', 'libx264', '-preset', 'slow', "-crf", crf, "-c:a", "aac", "-b:a", "128k", `output-${filename}`]);
+    const ffmpeg = spawn('ffmpeg', ['-y', "-vsync", "0", "-hwaccel", "cuvid", "-c:v", "h264_cuvid", '-i', `${filename}`, "-c:v", "h264_nvenc", '-preset', 'slow', "-crf", crf, "-c:a", "aac", "-b:a", "128k", `output-${filename.split(".")[0]}.mp4`]);
     ffmpeg.stderr.on('data', (data) => {
         console.log(`${data}`);
     });
