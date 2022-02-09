@@ -72,7 +72,7 @@ const getFileSize = async filename => {
 
 const downloadVideo = async (link) => new Promise((resolve, reject) => {
     const filename = nanoid(8)
-    const ytdlp = spawn('yt-dlp', ["--verbose", "--max-filesize", "65m", "-S", "res,ext:mp4:m4a", "--recode", "mp4", "-o", `${filename}.%(ext)s`, `${link}`]);
+    const ytdlp = spawn('yt-dlp', ["--verbose", "--max-filesize", "65m", "-S", "res,ext:mp4:m4a", "--recode", "mp4","-o", `${filename}.%(ext)s`, `${link}`]);
     ytdlp.stderr.on('data', (data) => {
         console.log(data.toString())
     });
@@ -86,7 +86,7 @@ const downloadVideo = async (link) => new Promise((resolve, reject) => {
 });
 
 const transcode = (filename, crf) => new Promise((resolve, reject) => {
-    const ffmpeg = spawn('ffmpeg', ['-y', "-vsync", "0", "-hwaccel", "cuvid", "-c:v", "h264_cuvid", '-i', `${filename}`, "-c:v", "h264_nvenc", '-preset', 'slow', "-crf", crf, "-c:a", "aac", "-b:a", "128k", `output-${filename.split(".")[0]}.mp4`]);
+    const ffmpeg = spawn('ffmpeg', ['-y', "-vsync", "0", "-hwaccel", "cuda", '-i', `${filename}`, "-c:v", "h264_nvenc", "-rc:v", "vbr", "-cq:v", crf, '-preset', 'slow', "-c:a", "aac", "-b:a", "128k", `output-${filename.split(".")[0]}.mp4`]);
     ffmpeg.stderr.on('data', (data) => {
         console.log(`${data}`);
     });
