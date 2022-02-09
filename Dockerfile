@@ -2,7 +2,7 @@ FROM nvidia/cuda:11.0-devel-ubuntu20.04 as build
 RUN apt-get update --fix-missing \
     && apt-get -y upgrade \
     && apt-get -y dist-upgrade
-ARG FFMPEG_VERSION="5.0" 
+ARG FFMPEG_VERSION="4.4" 
 ENV FFMPEG_VERSION="${FFMPEG_VERSION}"
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Helsinki
