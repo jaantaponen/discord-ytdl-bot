@@ -48,11 +48,8 @@ const handleProcess = async (message, url, reply) => {
     const videoOK = await transcode(filename, 34)
     if (!videoOK) return message.reply(`Hyvä linkki... failed to transcode ${Date.now() - message.createdTimestamp}ms`);
 
-    if (await getFileSize(filename) > 8) {
-        await transcode(filename, 42)
-    } else {
-        if (await getFileSize(filename) > 8) message.reply(`Hyvä linkki... after downgrade filesize was: ${finalSize}Mb`);
-    }
+    if (await getFileSize(filename) > 8) await transcode(filename, 42)
+    if (await getFileSize(filename) > 8) return message.reply(`Hyvä linkki... after downgrade filesize was: ${await getFileSize(filename)}Mb`);
     if (reply) {
         message.reply({ files: [`output-${filename}`] })
     } else {
@@ -74,7 +71,7 @@ const getFileSize = async filename => {
 
 const downloadVideo = async (link) => new Promise((resolve, reject) => {
     const filename = nanoid(8)
-    const ytdlp = spawn('yt-dlp', ["--verbose", "--max-filesize", "65m", "-S", "res,ext:mp4:m4a", "--recode", "mp4","-o", `${filename}.%(ext)s`, `${link}`]);
+    const ytdlp = spawn('yt-dlp', ["--verbose", "--max-filesize", "65m", "-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best", "-S", "res,ext:mp4:m4a", "--recode", "mp4", "-o", `${filename}.%(ext)s`, `${link}`]);
     ytdlp.stderr.on('data', (data) => {
         console.log(data.toString())
     });
@@ -88,7 +85,7 @@ const downloadVideo = async (link) => new Promise((resolve, reject) => {
 });
 
 const transcode = (filename, crf) => new Promise((resolve, reject) => {
-    const ffmpeg = spawn('ffmpeg', ['-y', "-vsync", "0", "-hwaccel", "cuda", '-i', `${filename}`, "-c:v", "h264_nvenc", "-rc:v", "vbr", "-cq:v", crf, '-preset', 'slow', "-c:a", "aac", "-b:a", "128k", `output-${filename.split(".")[0]}.mp4`]);
+    const ffmpeg = spawn('ffmpeg', ['-y', "-vsync", "0", "-hwaccel", "cuvid", "-c:v", "h264_cuvid", '-i', `${filename}`, "-c:v", "h264_nvenc", "-rc:v", "vbr", "-cq:v", crf, '-preset', 'slow', "-c:a", "aac", "-b:a", "128k", `output-${filename.split(".")[0]}.mp4`]);
     ffmpeg.stderr.on('data', (data) => {
         console.log(`${data}`);
     });
