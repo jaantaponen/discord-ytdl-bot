@@ -42,6 +42,7 @@ client.on("messageCreate", async (message) => {
 
 
 const handleProcess = async (message, url, reply) => {
+    message.channel.sendTyping()
     const filename = await downloadVideo(url)
     if (!filename) return message.reply(`Hyvä linkki... failed to ytdl... ${Date.now() - message.createdTimestamp}ms`);
     const videoOK = await transcode(filename, 34)
