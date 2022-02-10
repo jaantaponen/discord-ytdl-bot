@@ -35,6 +35,7 @@ client.on("messageCreate", async (message) => {
         }
     }
     else if (isValidHttpUrl(command)) {
+        message.suppressEmbeds(true) 
         return await handleProcess(message, command)
     }
 });
@@ -43,11 +44,11 @@ client.on("messageCreate", async (message) => {
 const handleProcess = async (message, url, reply) => {
     const filename = await downloadVideo(url)
     if (!filename) return message.reply(`Hyvä linkki... failed to ytdl... ${Date.now() - message.createdTimestamp}ms`);
-    const videoOK = await transcode(filename, 30)
+    const videoOK = await transcode(filename, 34)
     if (!videoOK) return message.reply(`Hyvä linkki... failed to transcode ${Date.now() - message.createdTimestamp}ms`);
 
     if (await getFileSize(filename) > 8) {
-        await transcode(filename, 40)
+        await transcode(filename, 42)
     } else {
         if (await getFileSize(filename) > 8) message.reply(`Hyvä linkki... after downgrade filesize was: ${finalSize}Mb`);
     }
