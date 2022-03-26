@@ -7,9 +7,9 @@ This bot can:
 - Delete the original message if the video was able to be downloaded
 - Install yt-dlp from source every rebuild
 
-#### Example docker-compose
+#### Example docker-compose (version >= 1.29.*)
 
-```console
+```yml
 
 version: "3.9"
    
@@ -19,6 +19,15 @@ services:
     restart: unless-stopped
     environment:
       - TOKEN="BOT TOKEN"
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+           - driver: nvidia
+             device_ids: ['0']
+             capabilities: [compute,utility,video]
 
 ```
 

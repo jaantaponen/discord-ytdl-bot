@@ -6,7 +6,7 @@ const { nanoid } = require("nanoid");
 const fs = require('fs').promises;
 const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 const path = require("path");
-var moment = require('moment');
+const moment = require('moment');
 
 client.once('ready', () => {
     console.log('Bot is running!');
