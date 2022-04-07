@@ -11,14 +11,13 @@ This bot can:
 
 ```yml
 
-version: "3.9"
-   
+version: "3.9"   
 services:
-  bot:
+  firstbot:
     build: https://github.com/jaantaponen/discord-ytdl-bot.git#main
     restart: unless-stopped
     environment:
-      - TOKEN="BOT TOKEN"
+      - TOKEN=ASDASD
       - NVIDIA_DRIVER_CAPABILITIES=all
       - NVIDIA_VISIBLE_DEVICES=all
     deploy:
@@ -28,6 +27,22 @@ services:
            - driver: nvidia
              device_ids: ['0']
              capabilities: [compute,utility,video]
+
+  secondbot:
+    build: https://github.com/jaantaponen/discord-ytdl-bot.git#main
+    restart: unless-stopped
+    environment:
+      - TOKEN=ASDASD
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+           - driver: nvidia
+             device_ids: ['0']
+             capabilities: [compute,utility,video]
+
 
 ```
 
