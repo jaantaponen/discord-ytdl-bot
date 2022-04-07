@@ -6,7 +6,7 @@ const { nanoid } = require("nanoid");
 const fs = require('fs').promises;
 const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 const path = require("path");
-const moment = require('moment');
+var moment = require('moment');
 
 client.once('ready', () => {
     console.log('Bot is running!');
@@ -47,10 +47,10 @@ const handleProcess = async (message, url, reply) => {
     const filename = await downloadVideo(url)
     if (!filename) return message.reply(`Hyvä linkki... failed to ytdl... ${Date.now() - message.createdTimestamp}ms`);
     if (await getFileSize(filename) > 8) {
-        const smaller = await transcode(filename, 39, tiktok)
+        const smaller = await transcode(filename, 46)
         if (!smaller) return message.reply(`Hyvä linkki... failed to transcode ${Date.now() - message.createdTimestamp}ms`)
-        const smallerSize = await getFileSize(`output-${filename}`) > 8
-        if (smallerSize) return message.reply(`Hyvä linkki... after downgrade filesize was: ${smallerSize}Mb`)
+        const smallerSize = await getFileSize(`output-${filename}`)
+        if (smallerSize > 8 ) return message.reply(`Hyvä linkki... after downgrade filesize was: ${smallerSize}Mb`)
     } else {
         await fs.rename(filename, `output-${filename}`)
     }
@@ -102,7 +102,7 @@ const downloadVideo = async (link) => new Promise((resolve, reject) => {
     });
 });
 
-const transcode = (filename, crf, tiktok) => new Promise((resolve, reject) => {
+const transcode = (filename, crf) => new Promise((resolve, reject) => {
     const ffmpeg = spawn('ffmpeg', [
         '-y',
         "-vsync",
