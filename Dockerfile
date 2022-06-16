@@ -2,7 +2,7 @@ FROM nvidia/cuda:11.0-devel-ubuntu20.04 as build
 RUN apt-get update --fix-missing \
     && apt-get -y upgrade \
     && apt-get -y dist-upgrade
-ARG FFMPEG_VERSION="4.4" 
+ARG FFMPEG_VERSION="4.4"
 ENV FFMPEG_VERSION="${FFMPEG_VERSION}"
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Helsinki
@@ -155,7 +155,7 @@ RUN wget -O ffmpeg.tar.gz https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.t
         --enable-opengl \
         --enable-sdl2 \
     && make -j$(nproc)
-RUN cd ffmpeg && make -j$(nproc) install 
+RUN cd ffmpeg && make -j$(nproc) install
 WORKDIR /src
 RUN tar -cvf /src/ffmpeg-dynamic-deps.tar \
     $(ldd /usr/local/ffmpeg-nvidia/bin/ffmpeg | \
@@ -171,7 +171,7 @@ ENV TZ=Europe/Helsinki
 COPY --from=build /usr/local/ffmpeg-nvidia/lib/* /usr/local/lib/
 COPY --from=build /usr/local/ffmpeg-nvidia/bin/* /usr/local/bin/
 COPY --from=build /src/ffmpeg-dynamic-deps.tar /
-RUN tar -xvf /ffmpeg-dynamic-deps.tar && \ 
+RUN tar -xvf /ffmpeg-dynamic-deps.tar && \
     rm /ffmpeg-dynamic-deps.tar
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES video,compute,utility
@@ -187,6 +187,7 @@ WORKDIR /workspace
 COPY package.json package.json
 COPY package-lock.json package-lock.json
 RUN npm ci
-RUN python3 -m pip install --upgrade git+https://github.com/yt-dlp/yt-dlp.git@release
+#RUN python3 -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
 COPY index.js index.js
+RUN python3 -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
 CMD ["node", "index.js"]
