@@ -1,10 +1,10 @@
-version: "3.9"   
+version: "3.9"
 services:
   hanabot:
     build: .
     restart: unless-stopped
     environment:
-      - TOKEN=""
+      - TOKEN=OTM5ODYwMDQ5NDYxOTIzODgw.Yf--4Q.x7SrIRkDls0U95INx7jSBIVNFjA
       - NVIDIA_DRIVER_CAPABILITIES=all
       - NVIDIA_VISIBLE_DEVICES=all
     deploy:
@@ -19,7 +19,7 @@ services:
     build: .
     restart: unless-stopped
     environment:
-      - TOKEN=""
+      - TOKEN=OTM5OTMzNTk1OTg2OTc2NzY4.YgADYA.Sm5gjlud6jIARv0rnokQRAkHSnU
       - NVIDIA_DRIVER_CAPABILITIES=all
       - NVIDIA_VISIBLE_DEVICES=all
     deploy:
