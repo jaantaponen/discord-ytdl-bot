@@ -15,6 +15,11 @@ const prefix = "!";
 client.on("messageCreate", async (message) => {
     if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
+    const user = message.member.user.tag
+    console.log("user sent", user)
+    if (user.startsWith('henkkis')) {
+      return message.reply(`Vedä käteen`);
+    }
 
     const commandBody = message.content.slice(prefix.length);
     const args = commandBody.split(' ');
@@ -45,7 +50,7 @@ client.on("messageCreate", async (message) => {
 const handleProcess = async (message, url, reply) => {
     message.channel.sendTyping()
     const filename = await downloadVideo(url)
-    if (!filename) return message.reply(`Hyvä linkki... failed to ytdl... ${Date.now() - message.createdTimestamp}ms`);
+    if (!filename) return message.reply(`ytdlp failed... maybe go open issue? https://github.com/yt-dlp ${Date.now() - message.createdTimestamp}ms`);
     if (await getFileSize(filename) > 8) {
         const smaller = await transcode(filename, 46)
         if (!smaller) return message.reply(`Hyvä linkki... failed to transcode ${Date.now() - message.createdTimestamp}ms`)
@@ -77,11 +82,10 @@ const downloadVideo = async (link) => new Promise((resolve, reject) => {
     const ytdlp = spawn('yt-dlp', [
         "--verbose",
         "--flat-playlist",
-        (new URL(link)).hostname.includes('tiktok.com') ? "--no-geo-bypass" : "--geo-bypass",
         "--max-filesize",
-        "65m",
+        "50m",
         "-f",
-        "(mp4)[height<=720][tbr<=1500]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+        "((bv*[fps>30]/bv*)[height<=720]/(wv*[fps>30]/wv*)) + ba / (b[fps>30]/b)[height<=720]/(w[fps>30]/w)",
         "-S",
         "codec:h264",
         "--merge-output-format",
