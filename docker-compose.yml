@@ -4,28 +4,10 @@ services:
     build: .
     restart: unless-stopped
     environment:
-      - TOKEN=""
-      - NVIDIA_DRIVER_CAPABILITIES=all
-      - NVIDIA_VISIBLE_DEVICES=all
-    deploy:
-      resources:
-        reservations:
-          devices:
-           - driver: nvidia
-             device_ids: ['0']
-             capabilities: [compute,utility,video]
+      - TOKEN=
 
   monnibot:
     build: .
     restart: unless-stopped
     environment:
-      - TOKEN=""
-      - NVIDIA_DRIVER_CAPABILITIES=all
-      - NVIDIA_VISIBLE_DEVICES=all
-    deploy:
-      resources:
-        reservations:
-          devices:
-           - driver: nvidia
-             device_ids: ['0']
-             capabilities: [compute,utility,video]
+      - TOKEN=
