@@ -47,7 +47,7 @@ const handleProcess = async (message, url, reply) => {
     const filename = await downloadVideo(url)
     if (!filename) return message.reply(`Hyvä linkki... failed to ytdl... ${Date.now() - message.createdTimestamp}ms`);
     if (await getFileSize(filename) > 8) {
-        const smaller = await transcode(filename, 46)
+        const smaller = await transcode(filename, 40)
         if (!smaller) return message.reply(`Hyvä linkki... failed to transcode ${Date.now() - message.createdTimestamp}ms`)
         const smallerSize = await getFileSize(`output-${filename}`)
         if (smallerSize > 8 ) return message.reply(`Hyvä linkki... after downgrade filesize was: ${smallerSize}Mb`)
@@ -77,11 +77,10 @@ const downloadVideo = async (link) => new Promise((resolve, reject) => {
     const ytdlp = spawn('yt-dlp', [
         "--verbose",
         "--flat-playlist",
-        (new URL(link)).hostname.includes('tiktok.com') ? "--no-geo-bypass" : "--geo-bypass",
         "--max-filesize",
-        "65m",
+        "50m",
         "-f",
-        "(mp4)[height<=720][tbr<=1500]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+        "((bv*[fps>30]/bv*)[height<=720]/(wv*[fps>30]/wv*)) + ba / (b[fps>30]/b)[height<=720]/(w[fps>30]/w)",
         "-S",
         "codec:h264",
         "--merge-output-format",
@@ -105,25 +104,17 @@ const downloadVideo = async (link) => new Promise((resolve, reject) => {
 const transcode = (filename, crf) => new Promise((resolve, reject) => {
     const ffmpeg = spawn('ffmpeg', [
         '-y',
-        "-vsync",
-        "0",
-        "-hwaccel",
-        "cuvid",
-        "-c:v",
-        "h264_cuvid",
-        '-i',
-        `${filename}`,
-        "-c:v",
-        "h264_nvenc",
-        "-rc:v",
-        "vbr",
-        "-cq:v",
-        crf,
-        '-preset',
-        'slow',
-        "-c:a",
-        "aac",
-        "-b:a",
+        '-i', 
+        `${filename}`, 
+        '-c:v', 
+        'h264_v4l2m2m', 
+        '-preset', 
+        'slow', 
+        "-crf", 
+        crf, 
+        "-c:a", 
+        "aac", 
+        "-b:a", 
         "128k",
         `output-${filename.split(".")[0]}.mp4`
     ])
