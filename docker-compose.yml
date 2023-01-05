@@ -1,13 +1,8 @@
 version: "3.9"   
 services:
   hanabot:
-    build: .
-    restart: unless-stopped
-    environment:
-      - TOKEN=
-
-  monnibot:
-    build: .
+    build: 
+      dockerfile: Dockerfile
     restart: unless-stopped
     environment:
       - TOKEN=
