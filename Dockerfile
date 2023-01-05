@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.0-devel-ubuntu20.04 as build
+FROM nvidia/cuda:11.0.3-devel-ubuntu20.04 as build
 RUN apt-get update --fix-missing \
     && apt-get -y upgrade \
     && apt-get -y dist-upgrade
@@ -165,7 +165,7 @@ RUN tar -cvf /src/ffmpeg-dynamic-deps.tar \
 #
 #
 #
-FROM nvidia/cuda:11.0-base-ubuntu20.04
+FROM nvidia/cuda:11.0.3-devel-ubuntu20.04
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Helsinki
 COPY --from=build /usr/local/ffmpeg-nvidia/lib/* /usr/local/lib/
