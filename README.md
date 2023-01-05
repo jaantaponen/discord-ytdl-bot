@@ -6,6 +6,7 @@ This bot can:
 - Try to transcode the videos so we don't exceed the free 8mb limit.
 - Delete the original message if the video was able to be downloaded
 - Install yt-dlp from source every rebuild
+- Hardware transcoding support
 
 #### Example docker-compose (version >= 1.29.*)
 
@@ -14,47 +15,26 @@ This bot can:
 version: "3.9"   
 services:
   firstbot:
-    build: https://github.com/jaantaponen/discord-ytdl-bot.git#main
+    build: https://github.com/jaantaponen/discord-ytdl-bot.git
     restart: unless-stopped
     environment:
       - TOKEN=ASDASD
-      - NVIDIA_DRIVER_CAPABILITIES=all
-      - NVIDIA_VISIBLE_DEVICES=all
-    deploy:
-      resources:
-        reservations:
-          devices:
-           - driver: nvidia
-             device_ids: ['0']
-             capabilities: [compute,utility,video]
 
   secondbot:
-    build: https://github.com/jaantaponen/discord-ytdl-bot.git#main
+    build: https://github.com/jaantaponen/discord-ytdl-bot.git
     restart: unless-stopped
     environment:
       - TOKEN=ASDASD
-      - NVIDIA_DRIVER_CAPABILITIES=all
-      - NVIDIA_VISIBLE_DEVICES=all
-    deploy:
-      resources:
-        reservations:
-          devices:
-           - driver: nvidia
-             device_ids: ['0']
-             capabilities: [compute,utility,video]
-
-
 ```
 
-#### Running with HW acceleration
+### Usage with NVIDIA hardware acceleration
 
 You have to have nvidia-docker2 installed and proper CUDA drivers.
 
 ```bash
-docker build -t ytdl-bot . && \
-docker run --rm -it --gpus 1 \
-    -e NVIDIA_VISIBLE_DEVICES=all \
-    -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video \
-    -e TOKEN="XXXXXXXXXXXXXXXXXXXXXXXX" \
-    ytdl-bot
+git clone https://github.com/jaantaponen/discord-ytdl-bot
+```
+
+```bash
+docker-compose up -f nvidia-docker-compose.yml
 ```

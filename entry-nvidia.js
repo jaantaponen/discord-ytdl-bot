@@ -37,6 +37,7 @@ client.on("messageCreate", async (message) => {
     else if (isValidHttpUrl(command)) {
         message.suppressEmbeds(true)
         await handleProcess(message, command)
+
     }
 });
 
@@ -46,7 +47,7 @@ const handleProcess = async (message, url, reply) => {
     const filename = await downloadVideo(url)
     if (!filename) return message.reply(`Hyvä linkki... failed to ytdl... ${Date.now() - message.createdTimestamp}ms`);
     if (await getFileSize(filename) > 8) {
-        const smaller = await transcode(filename, 39)
+        const smaller = await transcode(filename, 46)
         if (!smaller) return message.reply(`Hyvä linkki... failed to transcode ${Date.now() - message.createdTimestamp}ms`)
         const smallerSize = await getFileSize(`output-${filename}`)
         if (smallerSize > 8 ) return message.reply(`Hyvä linkki... after downgrade filesize was: ${smallerSize}Mb`)
@@ -73,13 +74,14 @@ const getFileSize = async filename => {
 
 const downloadVideo = async (link) => new Promise((resolve, reject) => {
     const filename = nanoid(8)
-    console.log("starting to download: ", link)
     const ytdlp = spawn('yt-dlp', [
         "--verbose",
-	"--no-playlist",
-	"--no-playlist",
+        "--flat-playlist",
+        (new URL(link)).hostname.includes('tiktok.com') ? "--no-geo-bypass" : "--geo-bypass",
+        "--max-filesize",
+        "65m",
         "-f",
-        "((bv*[filesize<=6M]/bv*)[height<=720]/(wv*[filesize<=6]/wv*)) + ba / (b[filesize<=6M]/b)[height<=720]/(w[filesize<=6M]/w)",
+        "(mp4)[height<=720][tbr<=1500]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
         "-S",
         "codec:h264",
         "--merge-output-format",
@@ -99,17 +101,26 @@ const downloadVideo = async (link) => new Promise((resolve, reject) => {
         resolve(files.find(x => x.includes(filename)));
     });
 });
+
 const transcode = (filename, crf) => new Promise((resolve, reject) => {
     const ffmpeg = spawn('ffmpeg', [
         '-y',
-        '-i', 
-        `${filename}`, 
-        '-c:v', 
-        'libx264', 
-        '-preset', 
-        'veryfast', 
-        "-crf", 
-        crf, 
+        "-vsync",
+        "0",
+        "-hwaccel",
+        "cuvid",
+        "-c:v",
+        "h264_cuvid",
+        '-i',
+        `${filename}`,
+        "-c:v",
+        "h264_nvenc",
+        "-rc:v",
+        "vbr",
+        "-cq:v",
+        crf,
+        '-preset',
+        'slow',
         "-c:a",
         "aac",
         "-b:a",

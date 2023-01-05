@@ -12,7 +12,7 @@
     "url": "git+https://github.com/jaantaponen/discord-ytdl-bot.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/jaantaponen/discord-ytdl-bot/issues"
   },
