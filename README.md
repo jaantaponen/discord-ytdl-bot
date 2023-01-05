@@ -8,7 +8,26 @@ This bot can:
 - Install yt-dlp from source every rebuild
 - Hardware transcoding support
 
-#### Example docker-compose (version >= 1.29.*)
+
+### Usage docker-compose (version >= 1.29.*)
+
+For regular x86 image please run 
+
+```bash
+docker-compose --profile x86 up
+```
+
+For support for arm64 (raspberry pi)
+```bash
+docker-compose --profile arm64 up
+```
+
+For support for nvidia hw acceleration
+```bash
+docker-compose --profile nvidia up
+```
+
+#### Example docker-compose (x86)
 
 ```yml
 
@@ -25,16 +44,4 @@ services:
     restart: unless-stopped
     environment:
       - TOKEN=ASDASD
-```
-
-### Usage with NVIDIA hardware acceleration
-
-You have to have nvidia-docker2 installed and proper CUDA drivers.
-
-```bash
-git clone https://github.com/jaantaponen/discord-ytdl-bot
-```
-
-```bash
-docker-compose up -f nvidia-docker-compose.yml
 ```

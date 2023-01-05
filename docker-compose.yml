@@ -1,8 +1,34 @@
 version: "3.9"   
 services:
-  hanabot:
+  bot:
+    profiles: ["x86"]
     build: 
       dockerfile: Dockerfile
+    environment:
+      - TOKEN=
+    restart: unless-stopped
+
+  arm64-bot:
+    profiles: ["arm64"]
+    environment:
+      - TOKEN=
+    build: 
+      dockerfile: Dockerfile_arm64
+    restart: unless-stopped
+
+  nvidia-bot:
+    profiles: ["nvidia"]
+    build: 
+      dockerfile: Dockerfile_nvidia
     restart: unless-stopped
     environment:
       - TOKEN=
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+           - driver: nvidia
+             device_ids: ['0']
+             capabilities: [compute,utility,video]
