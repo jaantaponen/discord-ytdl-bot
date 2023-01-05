@@ -1,6 +1,6 @@
 FROM debian:11-slim
 ARG DEBIAN_FRONTEND=noninteractive
-ARG FFMPEG_VERSION="4.4" 
+ARG FFMPEG_VERSION="5.1" 
 ENV FFMPEG_VERSION="${FFMPEG_VERSION}"
 ENV TZ=Europe/Helsinki
 WORKDIR /opt
@@ -86,7 +86,7 @@ RUN git clone -b release-3.0.4 https://github.com/sekrit-twc/zimg.git ffmpeg-lib
     && make -j$(nproc) \
     && make install
 RUN ldconfig
-RUN git clone --branch release/5.0 --depth 1 https://github.com/FFmpeg/FFmpeg.git FFmpeg \
+RUN git clone --branch release/${FFMPEG_VERSION} --depth 1 https://github.com/FFmpeg/FFmpeg.git FFmpeg \
     && cd FFmpeg \
     && ./configure \
         --extra-cflags="-I/usr/local/include" \
@@ -131,10 +131,10 @@ RUN apt-get -y update && \
     apt-get install -y bash python3 python3-pip git && \
     apt-get -y update && \
     apt-get clean all
-RUN python3 -m pip install --upgrade git+https://github.com/yt-dlp/yt-dlp.git@release
+RUN python3 -m pip install --upgrade git+https://github.com/yt-dlp/yt-dlp.git@master
 WORKDIR /workspace
 COPY package.json package.json
 COPY package-lock.json package-lock.json
-COPY index.js index.js
 RUN npm ci
+COPY index.js index.js
 CMD ["node", "index.js"]
