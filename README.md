@@ -11,15 +11,15 @@ This bot can:
 
 ### Usage docker-compose (version >= 1.29.*)
 
-For regular x86 image please run 
+For regular image please run 
 
 ```bash
-docker-compose --profile x86 up
+docker-compose --profile normal up
 ```
 
-For support for arm64 (raspberry pi)
+For support for raspberry pi hw transcoding
 ```bash
-docker-compose --profile arm64 up
+docker-compose --profile pi64 up
 ```
 
 For support for nvidia hw acceleration
