@@ -45,11 +45,11 @@ const handleProcess = async (message, url, reply) => {
     message.channel.sendTyping()
     const filename = await downloadVideo(url)
     if (!filename) return message.reply(`Hyvä linkki... failed to ytdl... ${Date.now() - message.createdTimestamp}ms`);
-    if (await getFileSize(filename) > 8) {
+    if (await getFileSize(filename) >= 25) {
         const smaller = await transcode(filename, 39)
         if (!smaller) return message.reply(`Hyvä linkki... failed to transcode ${Date.now() - message.createdTimestamp}ms`)
         const smallerSize = await getFileSize(`output-${filename}`)
-        if (smallerSize > 8 ) return message.reply(`Hyvä linkki... after downgrade filesize was: ${smallerSize}Mb`)
+        if (smallerSize > 25 ) return message.reply(`Hyvä linkki... after downgrade filesize was: ${smallerSize}Mb`)
     } else {
         await fs.rename(filename, `output-${filename}`)
     }
@@ -74,12 +74,12 @@ const getFileSize = async filename => {
 const downloadVideo = async (link) => new Promise((resolve, reject) => {
     const filename = nanoid(8)
     console.log("starting to download: ", link)
+    const targetSizeInM = 20
     const ytdlp = spawn('yt-dlp', [
         "--verbose",
-	"--no-playlist",
-	"--no-playlist",
+        "--no-playlist",
         "-f",
-        "((bv*[filesize<=6M]/bv*)[height<=720]/(wv*[filesize<=6]/wv*)) + ba / (b[filesize<=6M]/b)[height<=720]/(w[filesize<=6M]/w)",
+        `((bv*[filesize<=${targetSizeInM}]/bv*)[height<=720]/(wv*[filesize<=${targetSizeInM}]/wv*)) + ba / (b[filesize<=${targetSizeInM}]/b)[height<=720]/(w[filesize<=${targetSizeInM}]/w)`,
         "-S",
         "codec:h264",
         "--merge-output-format",
