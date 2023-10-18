@@ -14,18 +14,16 @@ This bot can:
 For regular image please run 
 
 ```bash
-docker-compose --profile normal up
+docker compose up
 ```
 
-For support for raspberry pi hw transcoding
+## Restarting (and downloading latest yt-dlp)
+
 ```bash
-docker-compose --profile pi64 up
+BUILD_NUMBER=$(openssl rand -base64 12) docker compose up -d --no-deps --build
 ```
 
-For support for nvidia hw acceleration
-```bash
-docker-compose --profile nvidia up
-```
+See docker-compose.yml for rpi and nvidia hw acceleration!
 
 #### Example docker-compose (x86)
 

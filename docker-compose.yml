@@ -1,34 +1,35 @@
 version: "3.9"   
 services:
   bot:
-    profiles: ["normal"]
     build: 
       dockerfile: Dockerfile
+      args:
+        BUILD_NUMBER: ${BUILD_NUMBER}
     environment:
       - TOKEN=
     restart: unless-stopped
 
-  arm64-bot:
-    profiles: ["pi64"]
-    environment:
-      - TOKEN=
-    build: 
-      dockerfile: Dockerfile_pi64
-    restart: unless-stopped
+  # arm64-bot:
+  #   profiles: ["pi64"]
+  #   environment:
+  #     - TOKEN=
+  #   build: 
+  #     dockerfile: Dockerfile_pi64
+  #   restart: unless-stopped
 
-  nvidia-bot:
-    profiles: ["nvidia"]
-    build: 
-      dockerfile: Dockerfile_nvidia
-    restart: unless-stopped
-    environment:
-      - TOKEN=
-      - NVIDIA_DRIVER_CAPABILITIES=all
-      - NVIDIA_VISIBLE_DEVICES=all
-    deploy:
-      resources:
-        reservations:
-          devices:
-           - driver: nvidia
-             device_ids: ['0']
-             capabilities: [compute,utility,video]
+  # nvidia-bot:
+  #   profiles: ["nvidia"]
+  #   build: 
+  #     dockerfile: Dockerfile_nvidia
+  #   restart: unless-stopped
+  #   environment:
+  #     - TOKEN=
+  #     - NVIDIA_DRIVER_CAPABILITIES=all
+  #     - NVIDIA_VISIBLE_DEVICES=all
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #          - driver: nvidia
+  #            device_ids: ['0']
+  #            capabilities: [compute,utility,video]

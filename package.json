@@ -1,7 +1,7 @@
 {
   "name": "discord-ytdl-bot",
   "version": "1.0.0",
-  "private":"true",
+  "private": "true",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,6 +22,6 @@
     "dotenv": "^16.3.1",
     "moment": "^2.29.4",
     "nanoid": "^3.2.0",
-    "youtube-search-without-api-key": "^1.1.0"
+    "ytsr": "^3.8.4"
   }
 }

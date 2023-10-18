@@ -1,17 +1,17 @@
 require('dotenv').config()
 const spawn = require('child_process').spawn;
 const { Client } = require("discord.js");
-const yt = require('youtube-search-without-api-key');
+const ytsr = require('ytsr');
 const { nanoid } = require("nanoid");
 const fs = require('fs').promises;
 const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
-const path = require("path");
-var moment = require('moment');
+const moment = require('moment');
 
 client.once('ready', () => {
     console.log('Bot is running!');
 });
 const prefix = "!";
+
 client.on("messageCreate", async (message) => {
     if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
@@ -24,10 +24,11 @@ client.on("messageCreate", async (message) => {
         message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
     }
     else if (command === "s") {
+        message.channel.sendTyping()
         const searchTerm = args.join(' ')
-        const videos = await yt.search(searchTerm);
+        const { items: videos } = await ytsr(searchTerm);
         const topResults = videos.length > 9 ? videos.slice(0, 9) : videos
-        const shortVideo = topResults.find(x => moment(x.duration_raw, "mm:ss").minutes() < 1)
+        const shortVideo = topResults.find(x => moment(x.duration, "mm:ss").minutes() < 1)
         if (shortVideo) {
             return await handleProcess(message, shortVideo.url, true)
         } else {
@@ -49,7 +50,7 @@ const handleProcess = async (message, url, reply) => {
         const smaller = await transcode(filename, 39)
         if (!smaller) return message.reply(`Hyvä linkki... failed to transcode ${Date.now() - message.createdTimestamp}ms`)
         const smallerSize = await getFileSize(`output-${filename}`)
-        if (smallerSize > 25 ) return message.reply(`Hyvä linkki... after downgrade filesize was: ${smallerSize}Mb`)
+        if (smallerSize > 25) return message.reply(`Hyvä linkki... after downgrade filesize was: ${smallerSize}Mb`)
     } else {
         await fs.rename(filename, `output-${filename}`)
     }
@@ -102,14 +103,14 @@ const downloadVideo = async (link) => new Promise((resolve, reject) => {
 const transcode = (filename, crf) => new Promise((resolve, reject) => {
     const ffmpeg = spawn('ffmpeg', [
         '-y',
-        '-i', 
-        `${filename}`, 
-        '-c:v', 
-        'libx264', 
-        '-preset', 
-        'veryfast', 
-        "-crf", 
-        crf, 
+        '-i',
+        `${filename}`,
+        '-c:v',
+        'libx264',
+        '-preset',
+        'veryfast',
+        "-crf",
+        crf,
         "-c:a",
         "aac",
         "-b:a",
@@ -151,12 +152,3 @@ const getVideoLength = (filename) => new Promise((resolve, reject) => {
         resolve(-1)
     });
 });
-
-// https://trac.ffmpeg.org/wiki/Encode/H.264#twopass
-const calculateBitrate = (seconds) => {
-    // (8 MiB * 8192 [converts MiB to kBit]) / x seconds
-    const videoSizekBit = (8 * 8192) / seconds
-    // videoSizekBit - 128 kBit/s (desired audio bitrate) = x kBit/s video bitrate
-    const fileSizekBit = videoSizekBit - 128
-    return fileSizekBit
-}

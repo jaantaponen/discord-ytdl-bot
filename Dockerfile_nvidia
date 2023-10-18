@@ -187,6 +187,8 @@ WORKDIR /workspace
 COPY package.json package.json
 COPY package-lock.json package-lock.json
 RUN npm ci
+ARG BUILD_NUMBER
+LABEL build-number="${BUILD_NUMBER}"
 RUN python3 -m pip install --upgrade git+https://github.com/yt-dlp/yt-dlp.git@release
 COPY entry-nvidia.js index.js
 CMD ["node", "index.js"]
