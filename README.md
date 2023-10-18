@@ -23,6 +23,12 @@ docker compose up
 BUILD_NUMBER=$(openssl rand -base64 12) docker compose up -d --no-deps --build
 ```
 
+### Example crontab (change compose path)
+
+```bash
+0 0 20 * * BUILD_NUMBER=$(/usr/bin/openssl rand -base64 12) /usr/bin/docker compose -f /home/ubuntu/discord-ytdl-bot/docker-compose.yml up -d --no-deps --build && /usr/bin/docker image prune -f && echo "$(date +%T)" >> /tmp/log.txt
+```
+
 See docker-compose.yml for rpi and nvidia hw acceleration!
 
 #### Example docker-compose (x86)
